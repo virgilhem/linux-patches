@@ -1,0 +1,21 @@
+--- a/drivers/platform/x86/thinkpad_acpi.c
++++ b/drivers/platform/x86/thinkpad_acpi.c
+@@ -10074,7 +10074,17 @@
+ 		return sysfs_emit(buf, "%d\n", lap_state);
+ 	return sysfs_emit(buf, "\n");
+ }
+-static DEVICE_ATTR_RO(dytc_lapmode);
++static ssize_t dytc_lapmode_store(struct device *dev,
++					struct device_attribute *attr,
++					const char *buf, size_t count)
++{
++	int err, dummy;
++	err = dytc_command(0x000F1001, &dummy);
++	if (err)
++		return err;
++	return count;
++}
++static DEVICE_ATTR_RW(dytc_lapmode);
+ 
+ static ssize_t palmsensor_show(struct device *dev,
+ 					struct device_attribute *attr,
