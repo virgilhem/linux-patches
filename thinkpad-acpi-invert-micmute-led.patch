@@ -1,0 +1,11 @@
+--- a/drivers/platform/x86/thinkpad_acpi.c
++++ b/drivers/platform/x86/thinkpad_acpi.c
+@@ -9183,7 +9183,7 @@
+ static int tpacpi_led_micmute_set(struct led_classdev *led_cdev,
+ 				  enum led_brightness brightness)
+ {
+-	return tpacpi_led_set(LED_AUDIO_MICMUTE, brightness != LED_OFF);
++	return tpacpi_led_set(LED_AUDIO_MICMUTE, brightness == LED_OFF);
+ }
+ 
+ static struct led_classdev mute_led_cdev[TPACPI_LED_MAX] = {

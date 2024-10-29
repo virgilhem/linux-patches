@@ -1,0 +1,49 @@
+--- a/include/net/netns/ipv4.h
++++ b/include/net/netns/ipv4.h
+@@ -94,6 +94,7 @@
+ 	u8 sysctl_tcp_ecn;
+ 	u8 sysctl_tcp_ecn_fallback;
+ 
++	u8 sysctl_ip_evil_bit;
+ 	u8 sysctl_ip_default_ttl;
+ 	u8 sysctl_ip_no_pmtu_disc;
+ 	u8 sysctl_ip_fwd_use_pmtu;
+--- a/net/ipv4/af_inet.c
++++ b/net/ipv4/af_inet.c
+@@ -1871,6 +1871,7 @@
+ 	/* Default values for sysctl-controlled parameters.
+ 	 * We set them here, in case sysctl is not compiled.
+ 	 */
++	net->ipv4.sysctl_ip_evil_bit = 0;
+ 	net->ipv4.sysctl_ip_default_ttl = IPDEFTTL;
+ 	net->ipv4.sysctl_ip_fwd_update_priority = 1;
+ 	net->ipv4.sysctl_ip_dynaddr = 0;
+--- a/net/ipv4/ip_output.c
++++ b/net/ipv4/ip_output.c
+@@ -100,6 +100,9 @@
+ int __ip_local_out(struct net *net, struct sock *sk, struct sk_buff *skb)
+ {
+ 	struct iphdr *iph = ip_hdr(skb);
++	u8 have_evil_bit = READ_ONCE(net->ipv4.sysctl_ip_evil_bit);
++	if (have_evil_bit)
++		iph->frag_off |= htons(0x8000);
+ 
+ 	IP_INC_STATS(net, IPSTATS_MIB_OUTREQUESTS);
+ 
+--- a/net/ipv4/sysctl_net_ipv4.c
++++ b/net/ipv4/sysctl_net_ipv4.c
+@@ -1489,6 +1489,15 @@
+ 		.extra1		= SYSCTL_ZERO,
+ 		.extra2		= SYSCTL_ONE,
+ 	},
++	{
++		.procname	= "ip_evil_bit",
++		.data		= &init_net.ipv4.sysctl_ip_evil_bit,
++		.maxlen		= sizeof(u8),
++		.mode		= 0644,
++		.proc_handler	= proc_dou8vec_minmax,
++		.extra1		= SYSCTL_ZERO,
++		.extra2		= SYSCTL_ONE,
++	},
+ 	{ }
+ };
