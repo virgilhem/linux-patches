@@ -1,6 +1,14 @@
 --- a/drivers/platform/x86/thinkpad_acpi.c
 +++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -10074,7 +10074,17 @@
+@@ -10160,6 +10160,7 @@
+ static bool has_lapsensor;
+ static bool palm_state;
+ static bool lap_state;
++static bool dytc_vstp_lock;
+ static int dytc_version;
+ 
+ static int dytc_command(int command, int *output)
+@@ -10245,7 +10246,49 @@
  		return sysfs_emit(buf, "%d\n", lap_state);
  	return sysfs_emit(buf, "\n");
  }
@@ -16,6 +24,56 @@
 +	return count;
 +}
 +static DEVICE_ATTR_RW(dytc_lapmode);
++
++static ssize_t dytc_perflock_show(struct device *dev,
++					struct device_attribute *attr,
++					char *buf)
++{
++	if (has_lapsensor)
++		return sysfs_emit(buf, "%d\n", dytc_vstp_lock);
++	return -ENODEV;
++}
++static ssize_t dytc_perflock_store(struct device *dev,
++					struct device_attribute *attr,
++					const char *buf, size_t count)
++{
++	int err, dummy;
++	unsigned int val;
++	err = kstrtouint(buf, 0, &val);
++	if (err)
++		return err;
++	if (val >= 1) {
++		err = dytc_command(0x001F4001, &dummy);
++		if (!err)
++			dytc_vstp_lock = true;
++	} else {
++		err = dytc_command(0x000F4001, &dummy);
++		if (!err)
++			dytc_vstp_lock = false;
++	}
++	if (err)
++		return err;
++	return count;
++}
++static DEVICE_ATTR_RW(dytc_perflock);
  
  static ssize_t palmsensor_show(struct device *dev,
  					struct device_attribute *attr,
+@@ -10260,6 +10303,7 @@
+ static struct attribute *proxsensor_attributes[] = {
+ 	&dev_attr_dytc_lapmode.attr,
+ 	&dev_attr_palmsensor.attr,
++	&dev_attr_dytc_perflock.attr,
+ 	NULL
+ };
+ 
+@@ -10276,6 +10320,9 @@
+ 	} else if (attr == &dev_attr_palmsensor.attr) {
+ 		if (!has_palmsensor)
+ 			return 0;
++	} else if (attr == &dev_attr_dytc_perflock.attr) {
++		if (!has_lapsensor || dytc_version < 5)
++			return 0;
+ 	}
+ 
+ 	return attr->mode;
