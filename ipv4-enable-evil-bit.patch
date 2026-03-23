@@ -1,7 +1,7 @@
 --- a/include/net/netns/ipv4.h
 +++ b/include/net/netns/ipv4.h
-@@ -135,6 +135,7 @@
- 	u8 sysctl_tcp_ecn;
+@@ -157,6 +157,7 @@
+ 	u8 sysctl_tcp_ecn_option_beacon;
  	u8 sysctl_tcp_ecn_fallback;
  
 +	u8 sysctl_ip_evil_bit;
@@ -10,7 +10,7 @@
  	u8 sysctl_ip_fwd_update_priority;
 --- a/net/ipv4/af_inet.c
 +++ b/net/ipv4/af_inet.c
-@@ -1813,6 +1813,7 @@
+@@ -1798,6 +1798,7 @@
  	/* Default values for sysctl-controlled parameters.
  	 * We set them here, in case sysctl is not compiled.
  	 */
@@ -20,7 +20,7 @@
  	net->ipv4.sysctl_ip_dynaddr = 0;
 --- a/net/ipv4/ip_output.c
 +++ b/net/ipv4/ip_output.c
-@@ -101,6 +101,9 @@
+@@ -102,6 +102,9 @@
  int __ip_local_out(struct net *net, struct sock *sk, struct sk_buff *skb)
  {
  	struct iphdr *iph = ip_hdr(skb);
@@ -32,9 +32,9 @@
  
 --- a/net/ipv4/sysctl_net_ipv4.c
 +++ b/net/ipv4/sysctl_net_ipv4.c
-@@ -1573,6 +1573,15 @@
- 		.proc_handler	= proc_dointvec_minmax,
- 		.extra1		= SYSCTL_ONE,
+@@ -1612,6 +1612,15 @@
+ 		.extra1		= SYSCTL_ONE_THOUSAND,
+ 		.extra2		= &tcp_rto_max_max,
  	},
 +	{
 +		.procname	= "ip_evil_bit",

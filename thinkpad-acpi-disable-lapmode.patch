@@ -1,6 +1,6 @@
---- a/drivers/platform/x86/thinkpad_acpi.c
-+++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -10160,6 +10160,7 @@
+--- a/drivers/platform/x86/lenovo/thinkpad_acpi.c
++++ b/drivers/platform/x86/lenovo/thinkpad_acpi.c
+@@ -10186,6 +10186,7 @@
  static bool has_lapsensor;
  static bool palm_state;
  static bool lap_state;
@@ -8,7 +8,7 @@
  static int dytc_version;
  
  static int dytc_command(int command, int *output)
-@@ -10245,7 +10246,49 @@
+@@ -10271,7 +10272,49 @@
  		return sysfs_emit(buf, "%d\n", lap_state);
  	return sysfs_emit(buf, "\n");
  }
@@ -59,7 +59,7 @@
  
  static ssize_t palmsensor_show(struct device *dev,
  					struct device_attribute *attr,
-@@ -10260,6 +10303,7 @@
+@@ -10286,6 +10329,7 @@
  static struct attribute *proxsensor_attributes[] = {
  	&dev_attr_dytc_lapmode.attr,
  	&dev_attr_palmsensor.attr,
@@ -67,7 +67,7 @@
  	NULL
  };
  
-@@ -10276,6 +10320,9 @@
+@@ -10302,6 +10346,9 @@
  	} else if (attr == &dev_attr_palmsensor.attr) {
  		if (!has_palmsensor)
  			return 0;
